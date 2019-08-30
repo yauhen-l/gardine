@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/root_container"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        tools:ignore="UselessParent">
+
+        <RelativeLayout
+            android:id="@+id/collapse_view"
+            android:layout_width="8dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="visible"
+            android:layout_alignParentRight="false"
+            android:layout_alignParentEnd="false">
+
+            <ImageView
+                android:id="@+id/destroy_btn"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginLeft="0dp"
+                android:src="@drawable/error"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/gardine"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@color/gardine"
+            android:padding="20dp">
+
+            <ListView
+                android:id="@+id/tasks_list"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:choiceMode="singleChoice"
+                android:layout_below="@+id/tasks_list"
+                />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>

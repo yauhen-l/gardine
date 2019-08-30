@@ -1,0 +1,7 @@
+*.iml
+.gradle
+.idea
+build
+captures
+local.properties
+gradle/wrapper/gradle-wrapper.jar
