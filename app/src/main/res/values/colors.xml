@@ -5,4 +5,5 @@
     <color name="colorAccent">#FF4081</color>
     <color name="blue">#0000FF</color>
     <color name="gardine">#88a1041d</color>
+    <color name="hidden">#22a1041d</color>
 </resources>

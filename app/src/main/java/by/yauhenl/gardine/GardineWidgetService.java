@@ -25,6 +25,9 @@ import java.util.List;
 
 public class GardineWidgetService extends Service {
 
+    public static final String LOG_TAG_COORD = "coord";
+    public static final String LOG_TAG_RECENT_APPS = "recent_apps";
+
     private WindowManager windowManager;
     private View gardine;
     private ArrayList<App> recentApps;
@@ -135,9 +138,6 @@ public class GardineWidgetService extends Service {
             }
         });
     }
-    private boolean isViewCollapsed() {
-        return gardine == null || gardine.findViewById(R.id.collapse_view).getVisibility() == View.VISIBLE;
-    }
 
     @Override
     public void onDestroy() {
@@ -153,15 +153,15 @@ public class GardineWidgetService extends Service {
         UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
         long time = System.currentTimeMillis();
         List<UsageStats> applist = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 100 * 1000, time);
-        for(UsageStats us : applist) {
-            Log.i("gardine", us.getPackageName() + ": inForeground= " + us.getTotalTimeInForeground() + ", lastTimeUsed= " + us.getLastTimeUsed());
-            if(us.getTotalTimeInForeground() == 0 ||
+        for (UsageStats us : applist) {
+            Log.d(LOG_TAG_RECENT_APPS, us.getPackageName() + ": inForeground= " + us.getTotalTimeInForeground() + ", lastTimeUsed= " + us.getLastTimeUsed());
+            if (us.getTotalTimeInForeground() == 0 ||
                     us.getLastTimeUsed() == 0) {
                 continue;
             }
             Intent startIntent = pm.getLaunchIntentForPackage(us.getPackageName());
-            if(startIntent == null) {
-                Log.i("gardine", "Skipping package " + us.getPackageName() + " due to absence of launch intent");
+            if (startIntent == null) {
+                Log.d(LOG_TAG_RECENT_APPS, "Skipping package " + us.getPackageName() + " due to absence of launch intent");
                 continue;
             }
             ApplicationInfo info = null;
@@ -170,11 +170,13 @@ public class GardineWidgetService extends Service {
                 info = pm.getApplicationInfo(us.getPackageName(), PackageManager.GET_META_DATA);
                 label = pm.getApplicationLabel(info).toString();
             } catch (PackageManager.NameNotFoundException e) {
-                Log.e("gardine", "Bad package: " + us.getPackageName(), e);
+                Log.e(LOG_TAG_RECENT_APPS, "Bad package: " + us.getPackageName(), e);
                 continue;
             }
             this.recentApps.add(new App(label, us.getPackageName(), us.getLastTimeUsed(), startIntent));
         }
+        Log.i(LOG_TAG_RECENT_APPS, "Sorting " + this.recentApps.size() + " recent apps");
+
         Collections.sort(this.recentApps);
         this.recentAppsAdapter.notifyDataSetChanged();
     }
