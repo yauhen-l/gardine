@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -30,16 +31,21 @@ public class GardineWidgetService extends Service {
     public static final String LOG_TAG_COORD = "coord";
     public static final String LOG_TAG_RECENT_APPS = "recent_apps";
 
+    private static final int MAX_ITEMS = 6;
     private static final int SHOW_X_THRESHOLD = 30;
-    private static final int SCROLL_Y_THRESHOLD = 60;
+    private static final int SCROLL_Y_THRESHOLD = 45;
+    private static final int VIBRATE_DURATION = 20;
 
     private WindowManager windowManager;
     private View gardine;
     private ArrayList<App> recentApps;
+    private ArrayList<App> tmpList;
     private ArrayAdapter<App> recentAppsAdapter;
+    private Vibrator vibrator;
 
     public GardineWidgetService() {
         this.recentApps = new ArrayList<>();
+        this.tmpList = new ArrayList<>();
     }
 
     @Override
@@ -50,6 +56,8 @@ public class GardineWidgetService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         gardine = LayoutInflater.from(this).inflate(R.layout.gardine, null);
 
@@ -140,7 +148,7 @@ public class GardineWidgetService extends Service {
                                 show();
                             }
                         } else {
-                            if(event.getRawX() - this.initialShowX > SHOW_X_THRESHOLD) {
+                            if(event.getRawX() - this.initialShowX > SHOW_X_THRESHOLD/2) {
                                 hide();
                                 return true;
                             }
@@ -150,8 +158,10 @@ public class GardineWidgetService extends Service {
 
                             if (itemsNumber > 0) {
                                 int selectedItem = Math.abs((Ydiff / SCROLL_Y_THRESHOLD) % itemsNumber);
-                                int prevItem = tasksList.getSelectedItemPosition();
+                                int prevItem = tasksList.getCheckedItemPosition();
                                 if (prevItem != selectedItem) {
+                                    Log.d(LOG_TAG_COORD, "Vibrate at Ydiff=" + Ydiff + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
+                                    vibrator.vibrate(VIBRATE_DURATION);
                                     tasksList.setItemChecked(selectedItem, true);
                                 }
                             }
@@ -172,7 +182,7 @@ public class GardineWidgetService extends Service {
     }
 
     private void actualizeRecentApps() {
-        this.recentApps.clear();
+        this.tmpList.clear();
 
         PackageManager pm = this.getPackageManager();
 
@@ -199,11 +209,15 @@ public class GardineWidgetService extends Service {
                 Log.e(LOG_TAG_RECENT_APPS, "Bad package: " + us.getPackageName(), e);
                 continue;
             }
-            this.recentApps.add(new App(label, us.getPackageName(), us.getLastTimeUsed(), startIntent));
+            this.tmpList.add(new App(label, us.getPackageName(), us.getLastTimeUsed(), startIntent));
         }
-        Log.i(LOG_TAG_RECENT_APPS, "Sorting " + this.recentApps.size() + " recent apps");
+        Log.i(LOG_TAG_RECENT_APPS, "Sorting " + this.tmpList.size() + " recent apps");
 
-        Collections.sort(this.recentApps);
+        Collections.sort(this.tmpList);
+
+        this.recentApps.clear();
+        this.recentApps.addAll(this.tmpList.subList(0, Math.min(this.tmpList.size(), MAX_ITEMS)));
+
         this.recentAppsAdapter.notifyDataSetChanged();
     }
 }
