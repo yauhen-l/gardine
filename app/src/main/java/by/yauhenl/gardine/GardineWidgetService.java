@@ -23,10 +23,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.widget.AdapterView.INVALID_POSITION;
+
 public class GardineWidgetService extends Service {
 
     public static final String LOG_TAG_COORD = "coord";
     public static final String LOG_TAG_RECENT_APPS = "recent_apps";
+
+    private static final int SHOW_X_THRESHOLD = 30;
+    private static final int SCROLL_Y_THRESHOLD = 60;
 
     private WindowManager windowManager;
     private View gardine;
@@ -84,46 +89,67 @@ public class GardineWidgetService extends Service {
         rootContainer.setOnTouchListener(new View.OnTouchListener() {
             private float initialTouchX;
             private float initialShowY;
+            private float initialShowX;
+
+            private boolean isHidden() {
+                return collapsedView.getVisibility() == View.VISIBLE;
+            }
+
+            private void hide() {
+                expandedView.setVisibility(View.GONE);
+                collapsedView.setVisibility(View.VISIBLE);
+            }
+
+            private void show() {
+                collapsedView.setVisibility(View.GONE);
+                expandedView.setVisibility(View.VISIBLE);
+            }
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        Log.d("gardine", "DOWN at " + event.getRawX() + ", " + event.getRawY());
+                        Log.d(LOG_TAG_COORD, "DOWN at " + event.getRawX() + ", " + event.getRawY());
                         initialTouchX = event.getRawX();
                         return true;
                     case MotionEvent.ACTION_UP:
-                        Log.d("gardine", "UP at " + event.getRawX() + ", " + event.getRawY());
+                        Log.d(LOG_TAG_COORD, "UP at " + event.getRawX() + ", " + event.getRawY());
 
-                        collapsedView.setVisibility(View.VISIBLE);
-                        expandedView.setVisibility(View.GONE);
 
-                        App selectedApp = (App)tasksList.getItemAtPosition(tasksList.getCheckedItemPosition());
-                        if(selectedApp != null) {
-                            GardineWidgetService.this.startActivity(selectedApp.startIntent);
+                        if(!isHidden()) {
+                            int checkedPos = tasksList.getCheckedItemPosition();
+                            if (checkedPos != INVALID_POSITION) {
+                                App selectedApp = (App) tasksList.getItemAtPosition(checkedPos);
+                                if (selectedApp != null) {
+                                    GardineWidgetService.this.startActivity(selectedApp.startIntent);
+                                }
+                            }
+                            hide();
                         }
 
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        int Xdiff = (int) (event.getRawX() - initialTouchX);
 
-                        if (Math.abs(Xdiff) > 30) {
-                            if (isViewCollapsed()) {
+                        if (isHidden()) {
+                            if (initialTouchX - event.getRawX() > SHOW_X_THRESHOLD) {
                                 GardineWidgetService.this.actualizeRecentApps();
 
+                                this.initialShowX = event.getRawX();
                                 this.initialShowY = event.getRawY();
 
-                                collapsedView.setVisibility(View.GONE);
-                                expandedView.setVisibility(View.VISIBLE);
-
+                                show();
                             }
-                        }
-                        if(!isViewCollapsed()) {
+                        } else {
+                            if(event.getRawX() - this.initialShowX > SHOW_X_THRESHOLD) {
+                                hide();
+                                return true;
+                            }
+
                             int Ydiff = (int) (event.getRawY() - this.initialShowY);
                             int itemsNumber = recentAppsAdapter.getCount();
 
                             if (itemsNumber > 0) {
-                                int selectedItem = Math.abs((Ydiff / 30) % itemsNumber);
+                                int selectedItem = Math.abs((Ydiff / SCROLL_Y_THRESHOLD) % itemsNumber);
                                 int prevItem = tasksList.getSelectedItemPosition();
                                 if (prevItem != selectedItem) {
                                     tasksList.setItemChecked(selectedItem, true);
