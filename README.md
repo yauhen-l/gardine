@@ -4,10 +4,14 @@ On Asus Zenfone (ZenUI) there was a cool gesture of swapping to the previous app
 
 Inspired by that idea I've developed a Gardine for my Xiaomi Redmi 4X device. 
 
-After launch application will request 2 permissions:
+Application requires 2 permissions:
 
 - access to usage statistics of applications (unfortunately in Andoird >= 5.0 it is the only _easy_ way of getting recent apps)
 - permission to draw overlays (a widget that is always on top)
+
+A showcast hot it works:
+
+<img src="showcast.gif" width="250">
 
 After granting permissions - click `Enable Gardine` button and transperent widget will be added to the right edge of your device.
 
