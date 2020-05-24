@@ -13,9 +13,9 @@ UPDATE:
 On MIUI >= 11 there is addition permission required. Since it is specific to MIUI only I did not add automatic request, but you can grant permission manually to the Gardine:
 `Settings app` > `Other permissions` > `Display pop-up windows while running in the background`
 
-A showcast hot it works:
+A screencast how it works:
 
-<img src="showcast.gif" width="250">
+<img src="screencast.gif" width="250">
 
 After granting permissions - click `Enable Gardine` button and transperent widget will be added to the right edge of your device.
 
