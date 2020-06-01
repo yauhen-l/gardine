@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Gardine</string>
+    <string name="accessibility_service_name">Gardine Service</string>
+    <string name="accessibility_service_description">Track all recent activities</string>
 </resources>

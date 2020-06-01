@@ -6,7 +6,7 @@ Inspired by that idea I've developed a Gardine for my Xiaomi Redmi 4X device.
 
 Application requires 2 permissions:
 
-- access to usage statistics of applications (unfortunately in Andoird >= 5.0 it is the only _easy_ way of getting recent apps)
+- accessibility service, has to be enabled manually
 - permission to draw overlays (a widget that is always on top)
 
 UPDATE:

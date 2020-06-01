@@ -1,14 +1,14 @@
 package by.yauhenl.gardine;
 
-import android.app.Service;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
+import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
-import android.os.IBinder;
+import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
@@ -16,17 +16,16 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import static android.widget.AdapterView.INVALID_POSITION;
 
-public class GardineWidgetService extends Service {
+public class GardineWidgetService extends AccessibilityService {
 
     public static final String LOG_TAG_COORD = "coord";
     public static final String LOG_TAG_RECENT_APPS = "recent_apps";
@@ -39,18 +38,68 @@ public class GardineWidgetService extends Service {
     private WindowManager windowManager;
     private View gardine;
     private ArrayList<App> recentApps;
-    private ArrayList<App> tmpList;
+    private RecentActivities recentActivities;
     private ArrayAdapter<App> recentAppsAdapter;
     private Vibrator vibrator;
 
     public GardineWidgetService() {
         this.recentApps = new ArrayList<>();
-        this.tmpList = new ArrayList<>();
+        this.recentActivities = new RecentActivities(MAX_ITEMS);
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+
+        //Configure these here for compatibility with API 13 and below.
+        AccessibilityServiceInfo config = new AccessibilityServiceInfo();
+        config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
+        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
+
+        if (Build.VERSION.SDK_INT >= 16)
+            //Just in case this helps
+            config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS;
+
+        setServiceInfo(config);
+
+    }
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            return;
+        }
+        if (event.getPackageName() != null && event.getClassName() != null) {
+            ComponentName componentName = new ComponentName(
+                    event.getPackageName().toString(),
+                    event.getClassName().toString()
+            );
+
+            ActivityInfo activityInfo;
+            PackageManager pm = this.getPackageManager();
+            try {
+                activityInfo = pm.getActivityInfo(componentName, 0);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.i(LOG_TAG_RECENT_APPS, "Ignore window of component: " + componentName);
+                return;
+            }
+            Intent startIntent = pm.getLaunchIntentForPackage(activityInfo.packageName);
+            if (startIntent == null) {
+                Log.d(LOG_TAG_RECENT_APPS, "Skipping package " + activityInfo.packageName + " due to absence of launch intent");
+                return;
+            }
+
+            String label = pm.getApplicationLabel(activityInfo.applicationInfo).toString();
+            this.recentActivities.add(new App(label, activityInfo.packageName, startIntent));
+
+            Log.i(LOG_TAG_RECENT_APPS, componentName.flattenToShortString());
+        }
+    }
+
+
+    @Override
+    public void onInterrupt() {
+
     }
 
     @Override
@@ -182,42 +231,8 @@ public class GardineWidgetService extends Service {
     }
 
     private void actualizeRecentApps() {
-        this.tmpList.clear();
-
-        PackageManager pm = this.getPackageManager();
-
-        UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
-        long time = System.currentTimeMillis();
-        List<UsageStats> applist = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 100 * 1000, time);
-        for (UsageStats us : applist) {
-            Log.d(LOG_TAG_RECENT_APPS, us.getPackageName() + ": inForeground= " + us.getTotalTimeInForeground() + ", lastTimeUsed= " + us.getLastTimeUsed());
-            if (us.getTotalTimeInForeground() == 0 ||
-                    us.getLastTimeUsed() == 0) {
-                continue;
-            }
-            Intent startIntent = pm.getLaunchIntentForPackage(us.getPackageName());
-            if (startIntent == null) {
-                Log.d(LOG_TAG_RECENT_APPS, "Skipping package " + us.getPackageName() + " due to absence of launch intent");
-                continue;
-            }
-            ApplicationInfo info = null;
-            String label = null;
-            try {
-                info = pm.getApplicationInfo(us.getPackageName(), PackageManager.GET_META_DATA);
-                label = pm.getApplicationLabel(info).toString();
-            } catch (PackageManager.NameNotFoundException e) {
-                Log.e(LOG_TAG_RECENT_APPS, "Bad package: " + us.getPackageName(), e);
-                continue;
-            }
-            this.tmpList.add(new App(label, us.getPackageName(), us.getLastTimeUsed(), startIntent));
-        }
-        Log.i(LOG_TAG_RECENT_APPS, "Sorting " + this.tmpList.size() + " recent apps");
-
-        Collections.sort(this.tmpList);
-
         this.recentApps.clear();
-        this.recentApps.addAll(this.tmpList.subList(0, Math.min(this.tmpList.size(), MAX_ITEMS)));
-
+        this.recentApps.addAll(this.recentActivities.getAll());
         this.recentAppsAdapter.notifyDataSetChanged();
     }
 }
