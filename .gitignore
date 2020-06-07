@@ -5,3 +5,6 @@ build
 captures
 local.properties
 gradle/wrapper/gradle-wrapper.jar
+**/.project
+**/.settings
+**/.classpath

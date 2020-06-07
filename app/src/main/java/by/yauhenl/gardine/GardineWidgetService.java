@@ -38,13 +38,13 @@ public class GardineWidgetService extends AccessibilityService {
     private WindowManager windowManager;
     private View gardine;
     private ArrayList<App> recentApps;
-    private RecentActivities recentActivities;
+    private DiscardingStack<App> recentActivities;
     private ArrayAdapter<App> recentAppsAdapter;
     private Vibrator vibrator;
 
     public GardineWidgetService() {
         this.recentApps = new ArrayList<>();
-        this.recentActivities = new RecentActivities(MAX_ITEMS);
+        this.recentActivities = new DiscardingStack<>(MAX_ITEMS);
     }
 
     @Override

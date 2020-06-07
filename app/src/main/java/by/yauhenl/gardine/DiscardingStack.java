@@ -5,17 +5,23 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
-public class RecentActivities {
+/**
+ * Stack (FILO) of unique elements.
+ * All elements over limit are dropped.
+ * Adding the same element several times moves it on top of the stack.
+ * @param <T>
+ */
+public class DiscardingStack<T> {
 
     private final int limit;
-    private LinkedHashSet<App> apps;
+    private LinkedHashSet<T> apps;
 
-    public RecentActivities(int limit) {
+    public DiscardingStack(int limit) {
         this.limit = limit;
         this.apps = new LinkedHashSet<>();
     }
 
-    public void add(App app) {
+    public void add(T app) {
         if(apps.contains(app)) {
             apps.remove(app);
         } else {
@@ -24,9 +30,9 @@ public class RecentActivities {
         apps.add(app);
     }
 
-    public Collection<App> getAll() {
-        ArrayDeque<App> reversed =  new ArrayDeque<>();
-        for (App a : this.apps) {
+    public Collection<T> getAll() {
+        ArrayDeque<T> reversed =  new ArrayDeque<>();
+        for (T a : this.apps) {
             reversed.push(a);
         }
         return reversed;
@@ -36,10 +42,10 @@ public class RecentActivities {
         if(apps.size() < limit) {
             return;
         }
-        Iterator<App> iter = apps.iterator();
-        for (int i = 0; iter.hasNext(); i++) {
+        Iterator<T> iter = apps.iterator();
+        for (int i = apps.size(); iter.hasNext(); i--) {
             iter.next();
-            if(i >= limit) {
+            if(i > limit) {
                 iter.remove();
             }
         }
