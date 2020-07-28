@@ -23,7 +23,6 @@ import android.widget.ListView;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import static android.widget.AdapterView.INVALID_POSITION;
 
@@ -123,7 +122,7 @@ public class GardineWidgetService extends AccessibilityService {
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
