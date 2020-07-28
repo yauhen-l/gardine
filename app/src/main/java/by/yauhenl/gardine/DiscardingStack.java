@@ -1,7 +1,6 @@
 package by.yauhenl.gardine;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -30,7 +29,7 @@ public class DiscardingStack<T> {
         apps.add(app);
     }
 
-    public Collection<T> getAll() {
+    public ArrayDeque<T> getAll() {
         ArrayDeque<T> reversed =  new ArrayDeque<>();
         for (T a : this.apps) {
             reversed.push(a);

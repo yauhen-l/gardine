@@ -21,7 +21,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import static android.widget.AdapterView.INVALID_POSITION;
 
@@ -29,21 +31,24 @@ public class GardineWidgetService extends AccessibilityService {
 
     public static final String LOG_TAG_COORD = "coord";
     public static final String LOG_TAG_RECENT_APPS = "recent_apps";
+    public static final String LOG_TAG_EVENT = "event";
 
+    // TODO: move to preferences
     private static final int MAX_ITEMS = 6;
     private static final int SHOW_X_THRESHOLD = 30;
     private static final int SCROLL_Y_THRESHOLD = 45;
     private static final int VIBRATE_DURATION = 20;
+    private static final int MAX_Y_DIFF = MAX_ITEMS * SCROLL_Y_THRESHOLD - SCROLL_Y_THRESHOLD/2;
+    private static final int MIN_Y_DIFF = 0;
 
     private WindowManager windowManager;
     private View gardine;
-    private ArrayList<App> recentApps;
     private DiscardingStack<App> recentActivities;
+    private String currentAppPackage;
     private ArrayAdapter<App> recentAppsAdapter;
     private Vibrator vibrator;
 
     public GardineWidgetService() {
-        this.recentApps = new ArrayList<>();
         this.recentActivities = new DiscardingStack<>(MAX_ITEMS);
     }
 
@@ -66,34 +71,39 @@ public class GardineWidgetService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        Log.d(LOG_TAG_EVENT, "Got event: " + event);
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             return;
         }
-        if (event.getPackageName() != null && event.getClassName() != null) {
-            ComponentName componentName = new ComponentName(
-                    event.getPackageName().toString(),
-                    event.getClassName().toString()
-            );
-
-            ActivityInfo activityInfo;
-            PackageManager pm = this.getPackageManager();
-            try {
-                activityInfo = pm.getActivityInfo(componentName, 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                Log.i(LOG_TAG_RECENT_APPS, "Ignore window of component: " + componentName);
-                return;
-            }
-            Intent startIntent = pm.getLaunchIntentForPackage(activityInfo.packageName);
-            if (startIntent == null) {
-                Log.d(LOG_TAG_RECENT_APPS, "Skipping package " + activityInfo.packageName + " due to absence of launch intent");
-                return;
-            }
-
-            String label = pm.getApplicationLabel(activityInfo.applicationInfo).toString();
-            this.recentActivities.add(new App(label, activityInfo.packageName, startIntent));
-
-            Log.i(LOG_TAG_RECENT_APPS, componentName.flattenToShortString());
+        if (event.getPackageName() == null || event.getClassName() == null) {
+            return;
         }
+        this.currentAppPackage = event.getPackageName().toString();
+
+        ComponentName componentName = new ComponentName(
+                event.getPackageName().toString(),
+                event.getClassName().toString()
+        );
+
+        ActivityInfo activityInfo;
+        PackageManager pm = this.getPackageManager();
+        try {
+            activityInfo = pm.getActivityInfo(componentName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.i(LOG_TAG_RECENT_APPS, "Ignore window of component: " + componentName);
+            return;
+        }
+        Intent startIntent = pm.getLaunchIntentForPackage(activityInfo.packageName);
+        if (startIntent == null) {
+            Log.d(LOG_TAG_RECENT_APPS, "Skipping package " + activityInfo.packageName + " due to absence of launch intent");
+            return;
+        }
+
+        String label = pm.getApplicationLabel(activityInfo.applicationInfo).toString();
+        App a = new App(label, activityInfo.packageName, startIntent);
+        this.recentActivities.add(a);
+
+        Log.i(LOG_TAG_RECENT_APPS, "Added app to the stack: " + a.toLogString());
     }
 
 
@@ -130,7 +140,7 @@ public class GardineWidgetService extends AccessibilityService {
 
         this.recentAppsAdapter = new ArrayAdapter<>(
                 this, R.layout.item, R.id.item,
-                this.recentApps);
+                new ArrayList<App>(MAX_ITEMS));
 
         final ListView tasksList = (ListView) gardine.findViewById(R.id.tasks_list);
         tasksList.setAdapter(this.recentAppsAdapter);
@@ -173,7 +183,7 @@ public class GardineWidgetService extends AccessibilityService {
                         Log.d(LOG_TAG_COORD, "UP at " + event.getRawX() + ", " + event.getRawY());
 
 
-                        if(!isHidden()) {
+                        if (!isHidden()) {
                             int checkedPos = tasksList.getCheckedItemPosition();
                             if (checkedPos != INVALID_POSITION) {
                                 App selectedApp = (App) tasksList.getItemAtPosition(checkedPos);
@@ -197,19 +207,31 @@ public class GardineWidgetService extends AccessibilityService {
                                 show();
                             }
                         } else {
-                            if(event.getRawX() - this.initialShowX > SHOW_X_THRESHOLD/2) {
+                            if (event.getRawX() - this.initialShowX > SHOW_X_THRESHOLD / 2) {
                                 hide();
                                 return true;
                             }
 
-                            int Ydiff = (int) (event.getRawY() - this.initialShowY);
+                            int yd = (int) (event.getRawY() - this.initialShowY);
+                            int oyd = yd;
+                            yd = Math.min(yd, MAX_Y_DIFF);
+                            yd = Math.max(yd, MIN_Y_DIFF);
+                            int correction = oyd - yd;
+                            this.initialShowY += correction;
+
                             int itemsNumber = recentAppsAdapter.getCount();
 
                             if (itemsNumber > 0) {
-                                int selectedItem = Math.abs((Ydiff / SCROLL_Y_THRESHOLD) % itemsNumber);
+                                int selectedItem = (yd / SCROLL_Y_THRESHOLD);
+                                if(selectedItem < 0) {
+                                    selectedItem = 0;
+                                } else if (selectedItem >= itemsNumber) {
+                                    selectedItem = itemsNumber - 1;
+                                }
+
                                 int prevItem = tasksList.getCheckedItemPosition();
                                 if (prevItem != selectedItem) {
-                                    Log.d(LOG_TAG_COORD, "Vibrate at Ydiff=" + Ydiff + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
+                                    Log.d(LOG_TAG_COORD, "Vibrate at Ydiff=" + yd + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
                                     vibrator.vibrate(VIBRATE_DURATION);
                                     tasksList.setItemChecked(selectedItem, true);
                                 }
@@ -231,8 +253,14 @@ public class GardineWidgetService extends AccessibilityService {
     }
 
     private void actualizeRecentApps() {
-        this.recentApps.clear();
-        this.recentApps.addAll(this.recentActivities.getAll());
+        this.recentAppsAdapter.clear();
+
+        ArrayDeque<App> recentApps = this.recentActivities.getAll();
+        if(this.currentAppPackage != null) {
+            boolean removed = recentApps.removeFirstOccurrence(new App(null, this.currentAppPackage, null));
+            Log.d(LOG_TAG_RECENT_APPS, "Current app " + this.currentAppPackage + " has been removed: " + removed);
+        }
+        this.recentAppsAdapter.addAll(recentApps);
         this.recentAppsAdapter.notifyDataSetChanged();
     }
 }

@@ -3,7 +3,7 @@ package by.yauhenl.gardine;
 import org.junit.Test;
 import static org.assertj.core.api.Java6Assertions.*;
 
-public class RecentActivitiesTest {
+public class DiscardingStackTest {
 
     private static final String a = "a", b = "b", c = "c", d = "d";
 
