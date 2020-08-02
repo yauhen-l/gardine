@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
@@ -43,10 +44,13 @@ public class MainActivity extends AppCompatActivity {
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         List<AccessibilityServiceInfo> enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
 
+        Log.d("accessibility", "Expect service is enabled for: package=" + context.getPackageName() + ", class=" + GardineWidgetService.class.getName());
+
         for (AccessibilityServiceInfo enabledService : enabledServices) {
-            ServiceInfo enabledServiceInfo = enabledService.getResolveInfo().serviceInfo;
-            if (enabledServiceInfo.packageName.equals(context.getPackageName()) &&
-                    enabledServiceInfo.name.equals(GardineWidgetService.class.getName()))
+            ServiceInfo i = enabledService.getResolveInfo().serviceInfo;
+            Log.d("accessibility", "Service is enabled for: package=" + i.packageName + " , class=" + i.name);
+            if (i.packageName.equals(context.getPackageName()) &&
+                    i.name.equals(GardineWidgetService.class.getName()))
                 return true;
         }
 

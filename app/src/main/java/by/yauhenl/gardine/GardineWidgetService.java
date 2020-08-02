@@ -55,25 +55,20 @@ public class GardineWidgetService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
 
-        //Configure these here for compatibility with API 13 and below.
         AccessibilityServiceInfo config = new AccessibilityServiceInfo();
         config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
         config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
-
-        if (Build.VERSION.SDK_INT >= 16)
-            //Just in case this helps
-            config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS;
+        config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS;
 
         setServiceInfo(config);
-
     }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        Log.d(LOG_TAG_EVENT, "Got event: " + event);
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             return;
         }
+        Log.d(LOG_TAG_EVENT, "Window in foreground: " + event.getPackageName());
         if (event.getPackageName() == null || event.getClassName() == null) {
             return;
         }
@@ -119,10 +114,17 @@ public class GardineWidgetService extends AccessibilityService {
 
         gardine = LayoutInflater.from(this).inflate(R.layout.gardine, null);
 
+        int LAYOUT_FLAG;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
