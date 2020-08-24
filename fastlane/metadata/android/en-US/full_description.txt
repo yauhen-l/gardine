@@ -1,0 +1,7 @@
+It is a floating widget on a upper right cornet of a screen.
+You swipe it left, but don't release a finger, and a list of recent apps will appear.
+The most recent app is always on the top of a stack.
+Then moving finger up or down you highlight a desired app you want to bring back to a foreground.
+By releasing a finger a selected app will be restored.
+
+On the first run Gardine will request an "Accessibility service" permission in order to track switch between applications and a permission to display as a floating widget above all other windows.
