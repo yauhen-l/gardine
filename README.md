@@ -30,3 +30,9 @@ By moving the finger up or down a required app can be selected.
 By releasing the finger highlighted app will be started.
 
 Enjoy.
+
+## Donate
+
+Bitcoin: bc1qz3avvmrkh93y6rq6jp9yhm8n5v78s06n8aghu4
+
+<img src="bitcoin-donate.png" width="250">
