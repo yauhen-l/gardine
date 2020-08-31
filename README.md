@@ -1,5 +1,5 @@
-<img src="https://img.shields.io/github/v/tag/yauhen-l/gardine.svg?logo=github" alt="The most recent tag">
-<img src="https://img.shields.io/f-droid/v/by.yauhenl.gardine.svg" alt="The most recent F-Droid version">
+[![The most recent tag](https://img.shields.io/github/v/tag/yauhen-l/gardine.svg?logo=github)](https://github.com/yauhen-l/gardine/tags)
+[![The most recent F-Droid version](https://img.shields.io/f-droid/v/by.yauhenl.gardine.svg)](https://f-droid.org/en/packages/by.yauhenl.gardine/)
 
 # Gardine - a minimalistic app switcher for Android
 
