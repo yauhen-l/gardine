@@ -1,3 +1,6 @@
+<img src="https://img.shields.io/github/v/tag/yauhen-l/gardine.svg?logo=github" alt="The most recent tag">
+<img src="https://img.shields.io/f-droid/v/by.yauhenl.gardine.svg" alt="The most recent F-Droid version">
+
 # Gardine - a minimalistic app switcher for Android
 
 On Asus Zenfone (ZenUI) there was a cool gesture of swapping to the previous app by scrolling on an edge of a display.
@@ -30,6 +33,12 @@ By moving the finger up or down a required app can be selected.
 By releasing the finger highlighted app will be started.
 
 Enjoy.
+
+## Installation
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/en/packages/by.yauhenl.gardine/)
 
 ## Donate
 
