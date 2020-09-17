@@ -17,13 +17,6 @@
         android:visibility="visible"
         android:animateLayoutChanges="false"
         >
-        <ImageView
-            android:id="@+id/destroy_btn"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginLeft="0dp"
-            android:src="@drawable/error"
-            tools:ignore="ContentDescription" />
     </LinearLayout>
 
     <LinearLayout

@@ -5,6 +5,7 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
@@ -18,8 +19,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
+
+import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -28,24 +31,21 @@ import static android.widget.AdapterView.INVALID_POSITION;
 
 public class GardineWidgetService extends AccessibilityService {
 
-    public static final String LOG_TAG_COORD = "coord";
-    public static final String LOG_TAG_RECENT_APPS = "recent_apps";
-    public static final String LOG_TAG_EVENT = "event";
-
     // TODO: move to preferences
     private static final int MAX_ITEMS = 6;
     private static final int SHOW_X_THRESHOLD = 30;
     private static final int SCROLL_Y_THRESHOLD = 45;
     private static final int VIBRATE_DURATION = 20;
-    private static final int MAX_Y_DIFF = MAX_ITEMS * SCROLL_Y_THRESHOLD - SCROLL_Y_THRESHOLD/2;
+    private static final int MAX_Y_DIFF = MAX_ITEMS * SCROLL_Y_THRESHOLD - SCROLL_Y_THRESHOLD / 2;
     private static final int MIN_Y_DIFF = 0;
 
     private WindowManager windowManager;
-    private View gardine;
+    private View widget;
     private DiscardingStack<App> recentActivities;
     private String currentAppPackage;
     private ArrayAdapter<App> recentAppsAdapter;
     private Vibrator vibrator;
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     public GardineWidgetService() {
         this.recentActivities = new DiscardingStack<>(MAX_ITEMS);
@@ -68,11 +68,10 @@ public class GardineWidgetService extends AccessibilityService {
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             return;
         }
-        Log.d(LOG_TAG_EVENT, "Window in foreground: " + event.getPackageName());
+        Log.d(LoggingUtils.EVENT_TAG, "Window in foreground: " + event.getPackageName());
         if (event.getPackageName() == null || event.getClassName() == null) {
             return;
         }
-        this.currentAppPackage = event.getPackageName().toString();
 
         ComponentName componentName = new ComponentName(
                 event.getPackageName().toString(),
@@ -84,12 +83,15 @@ public class GardineWidgetService extends AccessibilityService {
         try {
             activityInfo = pm.getActivityInfo(componentName, 0);
         } catch (PackageManager.NameNotFoundException e) {
-            Log.i(LOG_TAG_RECENT_APPS, "Ignore window of component: " + componentName);
+            Log.i(LoggingUtils.RECENT_APPS_TAG, "Ignore window of component: " + componentName);
             return;
         }
+
+        this.currentAppPackage = event.getPackageName().toString();
+
         Intent startIntent = pm.getLaunchIntentForPackage(activityInfo.packageName);
         if (startIntent == null) {
-            Log.d(LOG_TAG_RECENT_APPS, "Skipping package " + activityInfo.packageName + " due to absence of launch intent");
+            Log.d(LoggingUtils.RECENT_APPS_TAG, "Skipping package " + activityInfo.packageName + " due to absence of launch intent");
             return;
         }
 
@@ -97,7 +99,7 @@ public class GardineWidgetService extends AccessibilityService {
         App a = new App(label, activityInfo.packageName, startIntent);
         this.recentActivities.add(a);
 
-        Log.i(LOG_TAG_RECENT_APPS, "Added app to the stack: " + a.toLogString());
+        Log.i(LoggingUtils.RECENT_APPS_TAG, "Added app to the stack: " + a.toLogString());
     }
 
 
@@ -106,13 +108,29 @@ public class GardineWidgetService extends AccessibilityService {
 
     }
 
+    private void actualize_widget_visibility(SharedPreferences sharedPreferences) {
+        boolean isWidgetVisible = sharedPreferences.getBoolean(getString(R.string.pref_widget_enabled_key), true);
+        if (isWidgetVisible) {
+            widget.setVisibility(View.VISIBLE);
+        } else {
+            widget.setVisibility(View.GONE);
+        }
+    }
+
+    private void actualize_widget_background(SharedPreferences prefs, View view) {
+        final int defaultColor = ContextCompat.getColor(getApplicationContext(), R.color.hidden);
+        int backgroundColor = prefs.getInt(getString(R.string.pref_widget_background_color_key), defaultColor);
+        view.setBackgroundColor(backgroundColor);
+    }
+
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        gardine = LayoutInflater.from(this).inflate(R.layout.gardine, null);
+        widget = LayoutInflater.from(this).inflate(R.layout.widget, null);
 
         int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -133,26 +151,40 @@ public class GardineWidgetService extends AccessibilityService {
         params.y = 0;
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        windowManager.addView(gardine, params);
+        windowManager.addView(widget, params);
 
-        final View collapsedView = gardine.findViewById(R.id.collapse_view);
-        final View expandedView = gardine.findViewById(R.id.gardine);
-        final View rootContainer = gardine.findViewById(R.id.root_container);
+
+        final View collapsedView = widget.findViewById(R.id.collapse_view);
+        final View expandedView = widget.findViewById(R.id.gardine);
+        final View rootContainer = widget.findViewById(R.id.root_container);
+
+        widget.getViewTreeObserver().addOnGlobalLayoutListener(new AntipodeViewsLayoutListener(collapsedView, expandedView));
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        actualize_widget_visibility(sharedPreferences);
+        actualize_widget_background(sharedPreferences, collapsedView);
+
+        this.preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences changedPreferences, String key) {
+                if (getString(R.string.pref_widget_enabled_key).equals(key)) {
+                    actualize_widget_visibility(changedPreferences);
+                    return;
+                }
+                if (getString(R.string.pref_widget_background_color_key).equals(key)) {
+                    actualize_widget_background(changedPreferences, collapsedView);
+                    return;
+                }
+            }
+        };
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this.preferenceChangeListener);
 
         this.recentAppsAdapter = new ArrayAdapter<>(
                 this, R.layout.item, R.id.item,
                 new ArrayList<App>(MAX_ITEMS));
 
-        final ListView tasksList = (ListView) gardine.findViewById(R.id.tasks_list);
+        final ListView tasksList = (ListView) widget.findViewById(R.id.tasks_list);
         tasksList.setAdapter(this.recentAppsAdapter);
-
-        ImageView closeButtonCollapsed = (ImageView) gardine.findViewById(R.id.destroy_btn);
-        closeButtonCollapsed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopSelf();
-            }
-        });
 
         rootContainer.setOnTouchListener(new View.OnTouchListener() {
             private float initialTouchX;
@@ -165,23 +197,23 @@ public class GardineWidgetService extends AccessibilityService {
 
             private void hide() {
                 expandedView.setVisibility(View.GONE);
-                collapsedView.setVisibility(View.VISIBLE);
+                //collapsedView.setVisibility(View.VISIBLE);
             }
 
             private void show() {
                 collapsedView.setVisibility(View.GONE);
-                expandedView.setVisibility(View.VISIBLE);
+                //expandedView.setVisibility(View.VISIBLE);
             }
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        Log.d(LOG_TAG_COORD, "DOWN at " + event.getRawX() + ", " + event.getRawY());
+                        Log.d(LoggingUtils.COORD_TAG, "DOWN at " + event.getRawX() + ", " + event.getRawY());
                         initialTouchX = event.getRawX();
                         return true;
                     case MotionEvent.ACTION_UP:
-                        Log.d(LOG_TAG_COORD, "UP at " + event.getRawX() + ", " + event.getRawY());
+                        Log.d(LoggingUtils.COORD_TAG, "UP at " + event.getRawX() + ", " + event.getRawY());
 
 
                         if (!isHidden()) {
@@ -200,7 +232,7 @@ public class GardineWidgetService extends AccessibilityService {
 
                         if (isHidden()) {
                             if (initialTouchX - event.getRawX() > SHOW_X_THRESHOLD) {
-                                GardineWidgetService.this.actualizeRecentApps();
+                                GardineWidgetService.this.actualize_recent_apps();
 
                                 this.initialShowX = event.getRawX();
                                 this.initialShowY = event.getRawY();
@@ -224,7 +256,7 @@ public class GardineWidgetService extends AccessibilityService {
 
                             if (itemsNumber > 0) {
                                 int selectedItem = (yd / SCROLL_Y_THRESHOLD);
-                                if(selectedItem < 0) {
+                                if (selectedItem < 0) {
                                     selectedItem = 0;
                                 } else if (selectedItem >= itemsNumber) {
                                     selectedItem = itemsNumber - 1;
@@ -232,8 +264,8 @@ public class GardineWidgetService extends AccessibilityService {
 
                                 int prevItem = tasksList.getCheckedItemPosition();
                                 if (prevItem != selectedItem) {
-                                    Log.d(LOG_TAG_COORD, "Vibrate at Ydiff=" + yd + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
-                                    vibrator.vibrate(VIBRATE_DURATION);
+                                    Log.d(LoggingUtils.COORD_TAG, "Item changed at Ydiff=" + yd + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
+                                    vibrate_on_scroll();
                                     tasksList.setItemChecked(selectedItem, true);
                                 }
                             }
@@ -247,19 +279,26 @@ public class GardineWidgetService extends AccessibilityService {
         });
     }
 
+    private void vibrate_on_scroll() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        if (prefs.getBoolean(getString(R.string.pref_vibrate_on_scroll_key), true) && this.vibrator != null) {
+            this.vibrator.vibrate(VIBRATE_DURATION);
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (gardine != null) windowManager.removeView(gardine);
+        if (widget != null) windowManager.removeView(widget);
     }
 
-    private void actualizeRecentApps() {
+    private void actualize_recent_apps() {
         this.recentAppsAdapter.clear();
 
         ArrayDeque<App> recentApps = this.recentActivities.getAll();
-        if(this.currentAppPackage != null) {
+        if (this.currentAppPackage != null) {
             boolean removed = recentApps.removeFirstOccurrence(new App(null, this.currentAppPackage, null));
-            Log.d(LOG_TAG_RECENT_APPS, "Current app " + this.currentAppPackage + " has been removed: " + removed);
+            Log.d(LoggingUtils.RECENT_APPS_TAG, "Current app " + this.currentAppPackage + " has been removed: " + removed);
         }
         this.recentAppsAdapter.addAll(recentApps);
         this.recentAppsAdapter.notifyDataSetChanged();

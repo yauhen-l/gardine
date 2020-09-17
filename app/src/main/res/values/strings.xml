@@ -1,5 +1,24 @@
 <resources>
     <string name="app_name">Gardine</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+
     <string name="accessibility_service_name">Gardine Service</string>
     <string name="accessibility_service_description">Track all recent activities</string>
+
+    <string name="title_activity_main">Gardine</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preferences -->
+    <string name="pref_widget_enabled_key">pref_widget_enabled_key</string>
+    <string name="pref_widget_enabled_title">Widget enabled</string>
+
+    <string name="pref_category_look_and_feel_title">Look &amp; Feel</string>
+
+    <string name="pref_vibrate_on_scroll_key">pref_vibrate_on_scroll_key</string>
+    <string name="pref_vibrate_on_scroll_title">Vibrate on scroll</string>
+
+    <string name="pref_widget_background_color_key">pref_widget_background_color_key</string>
+    <string name="pref_widget_background_color_title">Widget background color</string>
 </resources>

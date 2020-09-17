@@ -1,0 +1,46 @@
+<androidx.preference.PreferenceScreen
+    xmlns:gardine="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        gardine:key="@string/pref_widget_enabled_key"
+        gardine:title="@string/pref_widget_enabled_title"
+        gardine:defaultValue="true"/>
+
+
+    <PreferenceCategory
+        gardine:title="@string/pref_category_look_and_feel_title">
+
+        <!--
+        <EditTextPreference
+            widget:key="signature"
+            widget:title="@string/signature_title"/>
+
+        <ListPreference
+            widget:key="reply"
+            widget:title="@string/reply_title"
+            widget:entries="@array/reply_entries"
+            widget:entryValues="@array/reply_values"
+            widget:defaultValue="reply"/>
+            -->
+
+        <SwitchPreferenceCompat
+            gardine:key="@string/pref_vibrate_on_scroll_key"
+            gardine:title="@string/pref_vibrate_on_scroll_title"
+            gardine:defaultValue="true"
+            />
+
+        <com.skydoves.colorpickerpreference.ColorPickerPreference
+            gardine:key="@string/pref_widget_background_color_key"
+            gardine:title="@string/pref_widget_background_color_title"
+            gardine:summary="Changes widget background color"
+            gardine:preference_attachAlphaSlideBar="true"
+            gardine:preference_attachBrightnessSlideBar="true"
+            gardine:preference_colorBox_radius="26dp"
+            gardine:preference_dialog_negative="@string/cancel"
+            gardine:preference_dialog_positive="@string/confirm"
+            gardine:preference_dialog_title="Widget background"
+            gardine:default_color="@color/hidden"/>
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>
