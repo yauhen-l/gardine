@@ -10,23 +10,16 @@
     <PreferenceCategory
         gardine:title="@string/pref_category_look_and_feel_title">
 
-        <!--
-        <EditTextPreference
-            widget:key="signature"
-            widget:title="@string/signature_title"/>
-
-        <ListPreference
-            widget:key="reply"
-            widget:title="@string/reply_title"
-            widget:entries="@array/reply_entries"
-            widget:entryValues="@array/reply_values"
-            widget:defaultValue="reply"/>
-            -->
-
         <SwitchPreferenceCompat
             gardine:key="@string/pref_vibrate_on_scroll_key"
             gardine:title="@string/pref_vibrate_on_scroll_title"
             gardine:defaultValue="true"
+            />
+
+        <SwitchPreferenceCompat
+            gardine:key="@string/pref_use_icons_key"
+            gardine:title="@string/pref_use_icons_title"
+            gardine:defaultValue="false"
             />
 
         <com.skydoves.colorpickerpreference.ColorPickerPreference

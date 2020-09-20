@@ -19,6 +19,9 @@
     <string name="pref_vibrate_on_scroll_key">pref_vibrate_on_scroll_key</string>
     <string name="pref_vibrate_on_scroll_title">Vibrate on scroll</string>
 
+    <string name="pref_use_icons_key">pref_use_icons_key</string>
+    <string name="pref_use_icons_title">Use icons</string>
+
     <string name="pref_widget_background_color_key">pref_widget_background_color_key</string>
     <string name="pref_widget_background_color_title">Widget background color</string>
 </resources>

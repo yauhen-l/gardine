@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,12 +49,6 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
     }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        initializeWidget();
-//    }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         @Override

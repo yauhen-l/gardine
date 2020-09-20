@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
@@ -18,7 +19,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.core.content.ContextCompat;
@@ -43,7 +43,7 @@ public class GardineWidgetService extends AccessibilityService {
     private View widget;
     private DiscardingStack<App> recentActivities;
     private String currentAppPackage;
-    private ArrayAdapter<App> recentAppsAdapter;
+    private AppArrayAdapter recentAppsAdapter;
     private Vibrator vibrator;
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
@@ -96,7 +96,8 @@ public class GardineWidgetService extends AccessibilityService {
         }
 
         String label = pm.getApplicationLabel(activityInfo.applicationInfo).toString();
-        App a = new App(label, activityInfo.packageName, startIntent);
+        Drawable icon = pm.getApplicationIcon(activityInfo.applicationInfo);
+        App a = new App(label, activityInfo.packageName, icon, startIntent);
         this.recentActivities.add(a);
 
         Log.i(LoggingUtils.RECENT_APPS_TAG, "Added app to the stack: " + a.toLogString());
@@ -123,6 +124,9 @@ public class GardineWidgetService extends AccessibilityService {
         view.setBackgroundColor(backgroundColor);
     }
 
+    private void actualize_use_icons(SharedPreferences prefs) {
+        this.recentAppsAdapter.setUseIcon(prefs.getBoolean(getString(R.string.pref_use_icons_key), false));
+    }
 
     @Override
     public void onCreate() {
@@ -160,7 +164,7 @@ public class GardineWidgetService extends AccessibilityService {
 
         widget.getViewTreeObserver().addOnGlobalLayoutListener(new AntipodeViewsLayoutListener(collapsedView, expandedView));
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
         actualize_widget_visibility(sharedPreferences);
         actualize_widget_background(sharedPreferences, collapsedView);
 
@@ -175,13 +179,19 @@ public class GardineWidgetService extends AccessibilityService {
                     actualize_widget_background(changedPreferences, collapsedView);
                     return;
                 }
+                if (getString(R.string.pref_use_icons_key).equals(key)) {
+                    actualize_use_icons(sharedPreferences);
+                    return;
+                }
+
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(this.preferenceChangeListener);
 
-        this.recentAppsAdapter = new ArrayAdapter<>(
-                this, R.layout.item, R.id.item,
+        this.recentAppsAdapter = new AppArrayAdapter(
+                this, R.layout.item, R.id.app_title, R.id.app_icon,
                 new ArrayList<App>(MAX_ITEMS));
+        actualize_use_icons(sharedPreferences);
 
         final ListView tasksList = (ListView) widget.findViewById(R.id.tasks_list);
         tasksList.setAdapter(this.recentAppsAdapter);
@@ -297,7 +307,7 @@ public class GardineWidgetService extends AccessibilityService {
 
         ArrayDeque<App> recentApps = this.recentActivities.getAll();
         if (this.currentAppPackage != null) {
-            boolean removed = recentApps.removeFirstOccurrence(new App(null, this.currentAppPackage, null));
+            boolean removed = recentApps.removeFirstOccurrence(new App(this.currentAppPackage));
             Log.d(LoggingUtils.RECENT_APPS_TAG, "Current app " + this.currentAppPackage + " has been removed: " + removed);
         }
         this.recentAppsAdapter.addAll(recentApps);
