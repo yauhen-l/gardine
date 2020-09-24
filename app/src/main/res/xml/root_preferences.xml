@@ -31,7 +31,7 @@
             gardine:preference_dialog_negative="@string/cancel"
             gardine:preference_dialog_positive="@string/confirm"
             gardine:preference_dialog_title="@string/pref_widget_background_color_title"
-            gardine:default_color="@color/hidden"/>
+            gardine:default_color="@color/default_color_collapsed_widget"/>
 
         <com.skydoves.colorpickerpreference.ColorPickerPreference
             gardine:key="@string/pref_expanded_widget_background_color_key"
@@ -42,7 +42,7 @@
             gardine:preference_dialog_negative="@string/cancel"
             gardine:preference_dialog_positive="@string/confirm"
             gardine:preference_dialog_title="@string/pref_expanded_widget_background_color_title"
-            gardine:default_color="@color/gardine"/>
+            gardine:default_color="@color/default_color_expanded_widget"/>
 
     </PreferenceCategory>
 
