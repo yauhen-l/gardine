@@ -1,0 +1,3 @@
+- Added new settings:
+1. A switch to either use icons or titles of application
+2. An expanded widget background color picker

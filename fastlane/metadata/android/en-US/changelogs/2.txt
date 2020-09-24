@@ -1,0 +1,7 @@
+- Main screen now contains settings:
+1. A widget switch
+2. A vibration on scroll switch
+3. A collapsed widget background color picker
+
+- Dropped 'Close' button on the widget.
+
