@@ -23,5 +23,9 @@
     <string name="pref_use_icons_title">Use icons</string>
 
     <string name="pref_widget_background_color_key">pref_widget_background_color_key</string>
-    <string name="pref_widget_background_color_title">Widget background color</string>
+    <string name="pref_widget_background_color_title">Collapsed widget background color</string>
+
+    <string name="pref_expanded_widget_background_color_key">pref_expanded_widget_background_color_key</string>
+    <string name="pref_expanded_widget_background_color_title">Expanded widget background color</string>
+
 </resources>

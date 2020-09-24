@@ -112,6 +112,7 @@ public class GardineWidgetService extends AccessibilityService {
     public void applyPreferences(SharedPreferences prefs) {
         applyPreferenceWidgetVisibility(prefs);
         applyPreferenceWidgetBackground(prefs);
+        applyPreferenceExpandedWidgetBackground(prefs);
         applyPreferenceUseIcons(prefs);
     }
 
@@ -127,9 +128,15 @@ public class GardineWidgetService extends AccessibilityService {
     }
 
     private void applyPreferenceWidgetBackground(SharedPreferences prefs) {
-        final int defaultColor = ContextCompat.getColor(getApplicationContext(), R.color.hidden);
+        final int defaultColor = ContextCompat.getColor(getApplicationContext(), R.color.default_color_collapsed_widget);
         int backgroundColor = prefs.getInt(getString(R.string.pref_widget_background_color_key), defaultColor);
         this.gardineView.setCollapsedBackground(backgroundColor);
+    }
+
+    private void applyPreferenceExpandedWidgetBackground(SharedPreferences prefs) {
+        final int defaultColor = ContextCompat.getColor(getApplicationContext(), R.color.default_color_expanded_widget);
+        int backgroundColor = prefs.getInt(getString(R.string.pref_expanded_widget_background_color_key), defaultColor);
+        this.gardineView.setExpandedBackground(backgroundColor);
     }
 
     private void applyPreferenceUseIcons(SharedPreferences prefs) {

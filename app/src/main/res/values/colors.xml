@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#a1041d</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="blue">#0000FF</color>
-    <color name="gardine">#aaa1041d</color>
-    <color name="hidden">#22a1041d</color>
+    <color name="colorAccent">#a1041d</color>
+    <color name="default_color_expanded_widget">#aaa1041d</color>
+    <color name="default_color_collapsed_widget">#22a1041d</color>
 </resources>

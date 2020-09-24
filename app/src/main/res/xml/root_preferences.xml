@@ -25,14 +25,24 @@
         <com.skydoves.colorpickerpreference.ColorPickerPreference
             gardine:key="@string/pref_widget_background_color_key"
             gardine:title="@string/pref_widget_background_color_title"
-            gardine:summary="Changes widget background color"
             gardine:preference_attachAlphaSlideBar="true"
             gardine:preference_attachBrightnessSlideBar="true"
             gardine:preference_colorBox_radius="26dp"
             gardine:preference_dialog_negative="@string/cancel"
             gardine:preference_dialog_positive="@string/confirm"
-            gardine:preference_dialog_title="Widget background"
+            gardine:preference_dialog_title="@string/pref_widget_background_color_title"
             gardine:default_color="@color/hidden"/>
+
+        <com.skydoves.colorpickerpreference.ColorPickerPreference
+            gardine:key="@string/pref_expanded_widget_background_color_key"
+            gardine:title="@string/pref_expanded_widget_background_color_title"
+            gardine:preference_attachAlphaSlideBar="true"
+            gardine:preference_attachBrightnessSlideBar="true"
+            gardine:preference_colorBox_radius="26dp"
+            gardine:preference_dialog_negative="@string/cancel"
+            gardine:preference_dialog_positive="@string/confirm"
+            gardine:preference_dialog_title="@string/pref_expanded_widget_background_color_title"
+            gardine:default_color="@color/gardine"/>
 
     </PreferenceCategory>
 

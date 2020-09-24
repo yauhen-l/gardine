@@ -83,6 +83,10 @@ public class GardineView {
         this.collapsedView.setBackgroundColor(color);
     }
 
+    public void setExpandedBackground(int color) {
+        this.expandedView.setBackgroundColor(color);
+    }
+
     public int getItemsCount() {
         return this.recentAppsAdapter.getCount();
     }
