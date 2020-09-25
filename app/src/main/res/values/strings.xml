@@ -28,4 +28,10 @@
     <string name="pref_expanded_widget_background_color_key">pref_expanded_widget_background_color_key</string>
     <string name="pref_expanded_widget_background_color_title">Expanded widget background color</string>
 
+    <string name="pref_widget_height_key">pref_widget_height_key</string>
+    <string name="pref_widget_height_title">Collapsed widget height</string>
+
+    <string name="pref_widget_width_key">pref_widget_width_key</string>
+    <string name="pref_widget_width_title">Collapsed widget width</string>
+
 </resources>

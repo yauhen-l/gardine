@@ -112,6 +112,8 @@ public class GardineWidgetService extends AccessibilityService {
     public void applyPreferences(SharedPreferences prefs) {
         applyPreferenceWidgetVisibility(prefs);
         applyPreferenceWidgetBackground(prefs);
+        applyPreferenceWidgetHeight(prefs);
+        applyPreferenceWidgetWidth(prefs);
         applyPreferenceExpandedWidgetBackground(prefs);
         applyPreferenceUseIcons(prefs);
     }
@@ -141,6 +143,14 @@ public class GardineWidgetService extends AccessibilityService {
 
     private void applyPreferenceUseIcons(SharedPreferences prefs) {
         this.gardineView.setUseIcons(prefs.getBoolean(getString(R.string.pref_use_icons_key), false));
+    }
+
+    private void applyPreferenceWidgetHeight(SharedPreferences prefs) {
+        this.gardineView.setCollapsedHeight(prefs.getInt(getString(R.string.pref_widget_height_key), 300));
+    }
+
+    private void applyPreferenceWidgetWidth(SharedPreferences prefs) {
+        this.gardineView.setCollapsedWidth(prefs.getInt(getString(R.string.pref_widget_width_key), 15));
     }
 
     public void actualizeRecentApps() {

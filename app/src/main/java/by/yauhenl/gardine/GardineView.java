@@ -2,9 +2,12 @@ package by.yauhenl.gardine;
 
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ListView;
 
@@ -19,9 +22,10 @@ public class GardineView {
     private final ListView tasksList;
     private final WindowManager windowManager;
     private final AppArrayAdapter recentAppsAdapter;
+    private final DisplayMetrics displatMetrics;
 
     public GardineView(GardineWidgetService ctx) {
-
+        this.displatMetrics = ctx.getResources().getDisplayMetrics();
         this.widget = LayoutInflater.from(ctx).inflate(R.layout.widget, null);
 
         int LAYOUT_FLAG;
@@ -81,6 +85,22 @@ public class GardineView {
 
     public void setCollapsedBackground(int color) {
         this.collapsedView.setBackgroundColor(color);
+    }
+
+    public void setCollapsedHeight(int heightDp) {
+        ViewGroup.LayoutParams params = this.collapsedView.getLayoutParams();
+        params.height = dpToPx(heightDp);
+        this.collapsedView.setLayoutParams(params);
+    }
+
+    public void setCollapsedWidth(int widthDp) {
+        ViewGroup.LayoutParams params = this.collapsedView.getLayoutParams();
+        params.width = dpToPx(widthDp);
+        this.collapsedView.setLayoutParams(params);
+    }
+
+    private int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, displatMetrics);
     }
 
     public void setExpandedBackground(int color) {

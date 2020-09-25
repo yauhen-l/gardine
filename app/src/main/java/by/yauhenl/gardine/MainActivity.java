@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 
@@ -15,6 +16,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.preference.SeekBarPreference;
 
 import java.util.List;
 
@@ -47,6 +49,18 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
+        }
+
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+
+        SeekBarPreference heightPrefs = settingsFragment.findPreference(getString(R.string.pref_widget_height_key));
+        if(heightPrefs != null) {
+            heightPrefs.setMax((int) (metrics.heightPixels * 160 / metrics.ydpi));
+        }
+
+        SeekBarPreference widthPrefs = settingsFragment.findPreference(getString(R.string.pref_widget_width_key));
+        if(widthPrefs != null) {
+            widthPrefs.setMax((int) (metrics.widthPixels * 160 / metrics.xdpi));
         }
     }
 

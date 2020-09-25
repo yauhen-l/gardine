@@ -1,5 +1,5 @@
-<androidx.preference.PreferenceScreen
-    xmlns:gardine="http://schemas.android.com/apk/res-auto">
+<androidx.preference.PreferenceScreen xmlns:gardine="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <SwitchPreferenceCompat
         gardine:key="@string/pref_widget_enabled_key"
@@ -43,6 +43,22 @@
             gardine:preference_dialog_positive="@string/confirm"
             gardine:preference_dialog_title="@string/pref_expanded_widget_background_color_title"
             gardine:default_color="@color/default_color_expanded_widget"/>
+
+        <SeekBarPreference
+            gardine:key="@string/pref_widget_height_key"
+            gardine:title="@string/pref_widget_height_title"
+            android:max="400"
+            gardine:showSeekBarValue="true"
+            gardine:adjustable="true"
+            gardine:defaultValue="300"/>
+
+        <SeekBarPreference
+            gardine:key="@string/pref_widget_width_key"
+            gardine:title="@string/pref_widget_width_title"
+            android:max="50"
+            gardine:showSeekBarValue="true"
+            gardine:adjustable="true"
+            gardine:defaultValue="15"/>
 
     </PreferenceCategory>
 
