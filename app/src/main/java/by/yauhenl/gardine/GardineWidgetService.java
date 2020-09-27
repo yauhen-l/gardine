@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.accessibility.AccessibilityEvent;
 
 import androidx.core.content.ContextCompat;
@@ -114,8 +115,10 @@ public class GardineWidgetService extends AccessibilityService {
         applyPreferenceWidgetBackground(prefs);
         applyPreferenceWidgetHeight(prefs);
         applyPreferenceWidgetWidth(prefs);
+        applyPreferenceWidgetPosition(prefs);
         applyPreferenceExpandedWidgetBackground(prefs);
         applyPreferenceUseIcons(prefs);
+        applyPreferencePointToSelect(prefs);
     }
 
     public void applyPreferenceVibrateOnScroll() {
@@ -145,12 +148,22 @@ public class GardineWidgetService extends AccessibilityService {
         this.gardineView.setUseIcons(prefs.getBoolean(getString(R.string.pref_use_icons_key), false));
     }
 
+    private void applyPreferencePointToSelect(SharedPreferences prefs) {
+        this.gardineView.setPointToSelect(prefs.getBoolean(getString(R.string.pref_widget_point_to_select_key), false));
+    }
+
     private void applyPreferenceWidgetHeight(SharedPreferences prefs) {
         this.gardineView.setCollapsedHeight(prefs.getInt(getString(R.string.pref_widget_height_key), 300));
     }
 
     private void applyPreferenceWidgetWidth(SharedPreferences prefs) {
         this.gardineView.setCollapsedWidth(prefs.getInt(getString(R.string.pref_widget_width_key), 15));
+    }
+
+    private void applyPreferenceWidgetPosition(SharedPreferences prefs) {
+        WidgetPosition pos = WidgetPosition.parse(
+        prefs.getString(getString(R.string.pref_widget_position_key), WidgetPosition.TOP_RIGHT.name()));
+        this.gardineView.setPosition(pos);
     }
 
     public void actualizeRecentApps() {

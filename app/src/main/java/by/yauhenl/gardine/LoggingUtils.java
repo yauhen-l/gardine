@@ -7,4 +7,5 @@ public class LoggingUtils {
     public static final String RECENT_APPS_TAG = "recent_apps";
     public static final String EVENT_TAG = "event";
     public static final String WIDGET = "widget";
+    public static final String PREFS = "prefs";
 }

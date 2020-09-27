@@ -1,12 +1,15 @@
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+    <string-array name="pref_widget_position_entries">
+        <item>@string/pref_widget_position_value_top_right</item>
+        <item>@string/pref_widget_position_value_top_left</item>
+        <item>@string/pref_widget_position_value_bottom_right</item>
+        <item>@string/pref_widget_position_value_bottom_left</item>
+    </string-array>
+    <string-array name="pref_widget_position_entry_values">
+        <item>TOP_RIGHT</item>
+        <item>TOP_LEFT</item>
+        <item>BOTTOM_RIGHT</item>
+        <item>BOTTOM_LEFT</item>
     </string-array>
 
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
-    </string-array>
 </resources>

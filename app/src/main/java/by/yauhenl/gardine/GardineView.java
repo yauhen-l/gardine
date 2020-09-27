@@ -4,7 +4,6 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,12 @@ import static android.content.Context.WINDOW_SERVICE;
 public class GardineView {
 
     private final View widget, collapsedView, expandedView;
-    private final ListView tasksList;
+    private final ListView appsListView;
     private final WindowManager windowManager;
     private final AppArrayAdapter recentAppsAdapter;
     private final DisplayMetrics displatMetrics;
+    private final WidgetTouchListener widgetTouchListener;
+    private WindowManager.LayoutParams widgetParams;
 
     public GardineView(GardineWidgetService ctx) {
         this.displatMetrics = ctx.getResources().getDisplayMetrics();
@@ -35,19 +36,19 @@ public class GardineView {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
         }
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+        this.widgetParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-        params.gravity = Gravity.RIGHT | Gravity.TOP;
-        params.x = 0;
-        params.y = 0;
+        this.widgetParams.gravity = WidgetPosition.TOP_RIGHT.gravity;
+        this.widgetParams.x = 0;
+        this.widgetParams.y = 0;
 
         this.windowManager = (WindowManager) ctx.getSystemService(WINDOW_SERVICE);
-        windowManager.addView(widget, params);
+        windowManager.addView(widget, this.widgetParams);
 
         collapsedView = widget.findViewById(R.id.collapse_view);
         expandedView = widget.findViewById(R.id.gardine);
@@ -59,10 +60,11 @@ public class GardineView {
                 ctx, R.layout.item, R.id.app_title, R.id.app_icon,
                 new ArrayList<App>(ctx.getMaxItems()));
 
-        this.tasksList = widget.findViewById(R.id.tasks_list);
-        tasksList.setAdapter(this.recentAppsAdapter);
+        this.appsListView = widget.findViewById(R.id.tasks_list);
+        appsListView.setAdapter(this.recentAppsAdapter);
 
-        rootContainer.setOnTouchListener(new WidgetTouchListener(ctx, this));
+        this.widgetTouchListener = new WidgetTouchListener(ctx, this);
+        rootContainer.setOnTouchListener(this.widgetTouchListener);
     }
 
     public void setUseIcons(boolean useIcons) {
@@ -125,8 +127,19 @@ public class GardineView {
         this.expandedView.setVisibility(View.VISIBLE);
     }
 
-    public ListView getTasksList() {
-        return this.tasksList;
+    public ListView getAppsListView() {
+        return this.appsListView;
+    }
+
+    public void setPosition(WidgetPosition pos) {
+        this.widgetParams.gravity = pos.gravity;
+        this.windowManager.updateViewLayout(this.widget, this.widgetParams);
+        this.widgetTouchListener.setSwipeDirection(pos);
+        this.recentAppsAdapter.setGravity(pos);
+    }
+
+    public void setPointToSelect(boolean pointToSelect) {
+        this.widgetTouchListener.setPointToSelect(pointToSelect);
     }
 
 }

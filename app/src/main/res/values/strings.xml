@@ -34,4 +34,14 @@
     <string name="pref_widget_width_key">pref_widget_width_key</string>
     <string name="pref_widget_width_title">Collapsed widget width</string>
 
+    <string name="pref_widget_position_key">pref_widget_position_key</string>
+    <string name="pref_widget_position_title">Widget position</string>
+    <string name="pref_widget_position_value_top_right">Top - Right</string>
+    <string name="pref_widget_position_value_top_left">Top - Left</string>
+    <string name="pref_widget_position_value_bottom_right">Bottom - Right</string>
+    <string name="pref_widget_position_value_bottom_left">Bottom - Left</string>
+
+    <string name="pref_widget_point_to_select_key">pref_widget_point_to_select_key</string>
+    <string name="pref_widget_point_to_select_title">Point to select</string>
+
 </resources>

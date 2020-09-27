@@ -44,6 +44,18 @@
             gardine:preference_dialog_title="@string/pref_expanded_widget_background_color_title"
             gardine:default_color="@color/default_color_expanded_widget"/>
 
+        <ListPreference
+            gardine:key="@string/pref_widget_position_key"
+            gardine:title="@string/pref_widget_position_title"
+            gardine:entries="@array/pref_widget_position_entries"
+            gardine:entryValues="@array/pref_widget_position_entry_values"
+            gardine:defaultValue="TOP_RIGHT"/>
+
+        <SwitchPreferenceCompat
+            gardine:key="@string/pref_widget_point_to_select_key"
+            gardine:title="@string/pref_widget_point_to_select_title"
+            gardine:defaultValue="false"/>
+
         <SeekBarPreference
             gardine:key="@string/pref_widget_height_key"
             gardine:title="@string/pref_widget_height_title"
@@ -59,6 +71,7 @@
             gardine:showSeekBarValue="true"
             gardine:adjustable="true"
             gardine:defaultValue="15"/>
+
 
     </PreferenceCategory>
 

@@ -18,8 +18,10 @@ class WidgetTouchListener implements View.OnTouchListener {
     private float initialTouchX;
     private float initialShowY;
     private float initialShowX;
-    private float prevX;
     private State state;
+    private int swipeDirection = 1;
+    private boolean pointToSelect = false;
+    private int[] widgetLocation = new int[2];
 
     public WidgetTouchListener(GardineWidgetService gardineWidgetService, GardineView view) {
         this.gardineWidgetService = gardineWidgetService;
@@ -28,15 +30,22 @@ class WidgetTouchListener implements View.OnTouchListener {
         this.state = State.WAITING;
     }
 
+    public void setSwipeDirection(WidgetPosition pos) {
+        this.swipeDirection = pos.swipeDirection;
+    }
+
+    public void setPointToSelect(boolean pointToSelect) {
+        this.pointToSelect = pointToSelect;
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        ListView listView = this.view.getTasksList();
+        ListView listView = this.view.getAppsListView();
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 Log.d(LoggingUtils.COORD_TAG, "DOWN at " + event.getRawX() + ", " + event.getRawY());
                 this.initialTouchX = event.getRawX();
-                this.prevX = this.initialTouchX;
                 this.state = State.INITIATED;
                 return true;
             case MotionEvent.ACTION_UP:
@@ -57,11 +66,8 @@ class WidgetTouchListener implements View.OnTouchListener {
 
                 return true;
             case MotionEvent.ACTION_MOVE:
-                float direction = event.getRawX() - this.prevX;
-                this.prevX = event.getRawX();
-
                 if (this.view.isHidden()) {
-                    if (initialTouchX - event.getRawX() > SHOW_X_THRESHOLD && state == State.INITIATED) {
+                    if ((initialTouchX - event.getRawX()) * this.swipeDirection > SHOW_X_THRESHOLD && state == State.INITIATED) {
                         gardineWidgetService.actualizeRecentApps();
 
                         Log.d(LoggingUtils.COORD_TAG, "SHOW at " + event.getRawX() + ", " + event.getRawY());
@@ -73,7 +79,7 @@ class WidgetTouchListener implements View.OnTouchListener {
                         this.state = State.OPENED;
                     }
                 } else {
-                    if (event.getRawX() - this.initialShowX > SHOW_X_THRESHOLD && state == State.OPENED) {
+                    if ((event.getRawX() - this.initialShowX) * this.swipeDirection > SHOW_X_THRESHOLD && state == State.OPENED) {
                         Log.d(LoggingUtils.COORD_TAG, "HIDE at " + event.getRawX() + ", " + event.getRawY());
 
                         this.view.hide();
@@ -88,25 +94,34 @@ class WidgetTouchListener implements View.OnTouchListener {
                     int correction = oyd - yd;
                     this.initialShowY += correction;
 
-                    int itemsNumber = this.view.getItemsCount();
-
-                    if (itemsNumber > 0) {
-                        int selectedItem = (yd / SCROLL_Y_THRESHOLD);
-                        if (selectedItem < 0) {
-                            selectedItem = 0;
-                        } else if (selectedItem >= itemsNumber) {
-                            selectedItem = itemsNumber - 1;
+                    int prevItem = listView.getCheckedItemPosition();
+                    int selectedItem = prevItem;
+                    if (pointToSelect) {
+                        listView.getLocationOnScreen(this.widgetLocation);
+                        float localX = event.getRawX() - this.widgetLocation[0];
+                        float localY = event.getRawY() - this.widgetLocation[1];
+                        selectedItem = listView.pointToPosition((int) localX, (int) localY);
+                        if (selectedItem == INVALID_POSITION) {
+                            return true;
                         }
+                    } else {
+                        int itemsNumber = this.view.getItemsCount();
 
-                        int prevItem = listView.getCheckedItemPosition();
-                        if (prevItem != selectedItem) {
-                            Log.d(LoggingUtils.COORD_TAG, "Item changed at Ydiff=" + yd + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
-                            gardineWidgetService.applyPreferenceVibrateOnScroll();
-                            listView.setItemChecked(selectedItem, true);
+                        if (itemsNumber > 0) {
+                            selectedItem = (yd / SCROLL_Y_THRESHOLD);
+                            if (selectedItem < 0) {
+                                selectedItem = 0;
+                            } else if (selectedItem >= itemsNumber) {
+                                selectedItem = itemsNumber - 1;
+                            }
                         }
                     }
+                    if (prevItem != selectedItem) {
+                        Log.d(LoggingUtils.COORD_TAG, "Item changed at Ydiff=" + yd + ", prevItem=" + prevItem + ", curItem=" + selectedItem);
+                        gardineWidgetService.applyPreferenceVibrateOnScroll();
+                        listView.setItemChecked(selectedItem, true);
+                    }
                 }
-
 
                 return true;
         }
