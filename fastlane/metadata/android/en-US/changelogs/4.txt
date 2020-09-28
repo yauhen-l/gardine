@@ -1,0 +1,4 @@
+Added new settings:
+1. Select position of the widget on the screen.
+2. Customize size of the widget.
+3. Switch to "point to select" mode instead of swiping applications list.
