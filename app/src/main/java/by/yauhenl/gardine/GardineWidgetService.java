@@ -13,6 +13,7 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -79,7 +80,7 @@ public class GardineWidgetService extends AccessibilityService {
 
         Intent startIntent = pm.getLaunchIntentForPackage(activityInfo.packageName);
         if (startIntent == null) {
-            Log.d(LoggingUtils.RECENT_APPS_TAG, "Skipping package " + activityInfo.packageName + " due to absence of launch intent");
+            Log.d(LoggingUtils.RECENT_APPS_TAG, "Skipping package " + activityInfo.packageName + " due to absence of a launch intent");
             return;
         }
 
@@ -162,7 +163,7 @@ public class GardineWidgetService extends AccessibilityService {
 
     private void applyPreferenceWidgetPosition(SharedPreferences prefs) {
         WidgetPosition pos = WidgetPosition.parse(
-        prefs.getString(getString(R.string.pref_widget_position_key), WidgetPosition.TOP_RIGHT.name()));
+                prefs.getString(getString(R.string.pref_widget_position_key), WidgetPosition.TOP_RIGHT.name()));
         this.gardineView.setPosition(pos);
     }
 
@@ -173,6 +174,15 @@ public class GardineWidgetService extends AccessibilityService {
             Log.d(LoggingUtils.RECENT_APPS_TAG, "Current app " + this.currentAppPackage + " has been removed: " + removed);
         }
         this.gardineView.setApps(recentApps);
+    }
+
+    public void removeApp(App a) {
+        this.recentActivities.remove(a);
+        actualizeRecentApps();
+        Toast.makeText(this,
+                String.format(this.getString(R.string.error_application_not_found), a.title),
+                Toast.LENGTH_SHORT)
+                .show();
     }
 
     @Override

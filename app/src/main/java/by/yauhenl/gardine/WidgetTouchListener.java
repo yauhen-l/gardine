@@ -4,6 +4,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import static android.widget.AdapterView.INVALID_POSITION;
 
@@ -57,7 +58,11 @@ class WidgetTouchListener implements View.OnTouchListener {
                     if (checkedPos != INVALID_POSITION) {
                         App selectedApp = (App) listView.getItemAtPosition(checkedPos);
                         if (selectedApp != null) {
-                            gardineWidgetService.startActivity(selectedApp.startIntent);
+                            try {
+                                this.gardineWidgetService.startActivity(selectedApp.startIntent);
+                            } catch(android.content.ActivityNotFoundException e) {
+                                this.gardineWidgetService.removeApp(selectedApp);
+                            }
                         }
                     }
                     this.view.hide();

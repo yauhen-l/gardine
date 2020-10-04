@@ -13,36 +13,40 @@ import java.util.LinkedHashSet;
 public class DiscardingStack<T> {
 
     private final int limit;
-    private LinkedHashSet<T> apps;
+    private LinkedHashSet<T> elements;
 
     public DiscardingStack(int limit) {
         this.limit = limit;
-        this.apps = new LinkedHashSet<>();
+        this.elements = new LinkedHashSet<>();
     }
 
-    public void add(T app) {
-        if(apps.contains(app)) {
-            apps.remove(app);
+    public boolean remove(T e) {
+        return this.elements.remove(e);
+    }
+
+    public void add(T e) {
+        if(elements.contains(e)) {
+            elements.remove(e);
         } else {
             truncateSize(this.limit - 1);
         }
-        apps.add(app);
+        elements.add(e);
     }
 
     public ArrayDeque<T> getAll() {
         ArrayDeque<T> reversed =  new ArrayDeque<>();
-        for (T a : this.apps) {
+        for (T a : this.elements) {
             reversed.push(a);
         }
         return reversed;
     }
 
     private void truncateSize(int limit) {
-        if(apps.size() < limit) {
+        if(elements.size() < limit) {
             return;
         }
-        Iterator<T> iter = apps.iterator();
-        for (int i = apps.size(); iter.hasNext(); i--) {
+        Iterator<T> iter = elements.iterator();
+        for (int i = elements.size(); iter.hasNext(); i--) {
             iter.next();
             if(i > limit) {
                 iter.remove();

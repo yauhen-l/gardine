@@ -1,4 +1,4 @@
-It is a floating widget on a upper right cornet of a screen.
+It is a floating widget on a upper right corner of a screen.
 You swipe it left, but don't release a finger, and a list of recent apps will appear.
 The most recent app is always on the top of a stack.
 Then moving finger up or down you highlight a desired app you want to bring back to a foreground.
