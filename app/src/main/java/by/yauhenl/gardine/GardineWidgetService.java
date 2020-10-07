@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 public class GardineWidgetService extends AccessibilityService {
 
@@ -173,6 +174,16 @@ public class GardineWidgetService extends AccessibilityService {
             boolean removed = recentApps.removeFirstOccurrence(new App(this.currentAppPackage));
             Log.d(LoggingUtils.RECENT_APPS_TAG, "Current app " + this.currentAppPackage + " has been removed: " + removed);
         }
+        Iterator<App> iter = recentApps.iterator();
+        while (iter.hasNext()) {
+            App a = iter.next();
+            if (this.getPackageManager().getLaunchIntentForPackage(a.packageName) == null) {
+                Log.i(LoggingUtils.RECENT_APPS_TAG, "App '" + a.title + "' cannot be resolved. Dropping it.");
+                this.recentActivities.remove(a);
+                iter.remove();
+            }
+        }
+
         this.gardineView.setApps(recentApps);
     }
 
